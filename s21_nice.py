@@ -66,14 +66,19 @@ def open_folder_dialog():
 
     if folder_selected:
         print(f'Selected folder: {folder_selected}')
-        fig = import_data_and_graph(PATH_TO_FILES)
-        ui.plotly(fig).classes('w-full')
-
-# Callback function for button click
-def on_button_click():
-    open_folder_dialog()
+        fig = import_data_and_graph(folder_selected)
+        # print(delete_checkbox.value)
+        if delete_checkbox.value:
+            graph_card.clear()
+        with graph_card:
+            ui.plotly(fig).classes('w-full')
 
 if __name__ in {"__main__", "__mp_main__"}:
-
-    ui.button('Select Folder', on_click=on_button_click)
+    # fig = px.line()
+    with ui.row() as top_row:
+        ui.button('Select Folder', on_click=open_folder_dialog)
+        delete_checkbox = ui.checkbox('Delete previous graph(s)', value=True)
+    with ui.card() as graph_card:
+        ui.label(text='Please select a folder using the button')
+    graph_card.classes('w-full')
     ui.run()
