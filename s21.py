@@ -4,15 +4,13 @@ import plotly.express as px
 import os
 import pandas as pd
 
-
-
 PATH_TO_FILES = "./data"
 
 def import_and_graph(
         files_path: str
         ) -> None:
     
-    # All file names in a list
+    # All file names to a list
     all_files = glob.glob(os.path.join(files_path, "*.prn"))
     # Column name in dataframe
     column_names = ['freq', 'dB', 'r']
@@ -52,8 +50,6 @@ def import_and_graph(
 
     fig.update_xaxes(tickvals=tickvals, ticktext=ticktext, tickformat=".0e", type='log')
     fig.show()
-
-
 
 if __name__ == "__main__":
     import_and_graph(PATH_TO_FILES)
