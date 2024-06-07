@@ -5,7 +5,7 @@ import os
 import pandas as pd
 from nicegui import ui
 from tkinter import filedialog
-from tkinter import filedialog, Tk, Toplevel
+from tkinter import filedialog, Tk
 
 PATH_TO_FILES = "./data"
 
@@ -18,7 +18,7 @@ def import_data_and_graph(
     # Column name in dataframe
     column_names = ['freq', 'dB', 'r']
     data_frames = []
-    print('Parsing data, please wait...')
+    # print('Parsing data, please wait...')
     for file in all_files:
         df = pd.read_csv(file, header=None, names=column_names)
         # Removes first two rows
@@ -34,8 +34,16 @@ def import_data_and_graph(
         data_frames.append(df)
 
     combined_df = pd.concat(data_frames, ignore_index=True)
-    fig = px.line(combined_df, x='freq', y='dB', color='Source', height=900)
-
+    if show_title_checkbox.value:
+        title = f'Data from: {files_path}'
+    else:
+        title = 'S21 Log Mag'
+    if dark.value:
+        theme = 'plotly_dark'
+    else:
+        theme = 'plotly'
+    fig = px.line(combined_df, x='freq', y='dB', color='Source', height=900, title=title, template=theme)
+    # fig.update_layout(template='plotly_dark')
     # Sets tick interval for freq axis
     tickvals = list(range(30_000_000, 9_000_000_000, 1_000_000_000))
     # For tick text
@@ -52,8 +60,8 @@ def import_data_and_graph(
     tickvals.append(9_000_000_000)
     ticktext.append("9 GHz")
 
-    fig.update_xaxes(tickvals=tickvals, ticktext=ticktext, tickformat=".0e", type='log')
-    print(f'Parsed {len(all_files)} file(s)')
+    fig.update_xaxes(tickvals=tickvals, ticktext=ticktext, tickformat=".0e", type='log', tickangle=45)
+    ui.notify(f'Parsed {len(all_files)} file(s)', close_button='Close')
     return fig
     
 def open_folder_dialog():
@@ -65,19 +73,33 @@ def open_folder_dialog():
     root.destroy()
 
     if folder_selected:
-        print(f'Selected folder: {folder_selected}')
         fig = import_data_and_graph(folder_selected)
-        # print(delete_checkbox.value)
         if delete_checkbox.value:
             graph_card.clear()
         with graph_card:
             ui.plotly(fig).classes('w-full')
+def update_theme():
+    if dark.value:
+        theme = 'plotly_dark'
+        dark.disable()
+    else:
+        theme = 'plotly'
+        dark.enable()
+    
 
 if __name__ in {"__main__", "__mp_main__"}:
     # fig = px.line()
+    dark = ui.dark_mode()
+    # print(dark.value)
+
+    dark.disable()
     with ui.row() as top_row:
         ui.button('Select Folder', on_click=open_folder_dialog)
         delete_checkbox = ui.checkbox('Delete previous graph(s)', value=True)
+        show_title_checkbox = ui.checkbox('Show file path as title', value=True)
+        # ui.label('Theme:').classes('center-content')
+        ui.button('Dark', on_click=update_theme)
+        ui.button('Light', on_click=update_theme)
     with ui.card() as graph_card:
         ui.label(text='Please select a folder using the button')
     graph_card.classes('w-full')
