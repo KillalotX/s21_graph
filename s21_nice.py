@@ -150,18 +150,20 @@ if __name__ in {"__main__", "__mp_main__"}:
             with ui.row().classes('w-full items-center justify-between'):
                 ui.button('Select Data Folder', on_click=open_folder_dialog_data).classes('ml-auto').classes('w-3/4').props('color=cyan-9')
                 ui.button('Clear').classes('ml-auto').classes('w-1/5').props('color=cyan-9')
-            data_files = ui.textarea(label='File(s)').classes('w-full').props('clearable')
-            data_folder = ui.input(label='Folder').classes('w-full').props('clearable')
+            data_files = ui.textarea(label='File(s)').classes('w-full')
+            data_folder = ui.input(label='Folder').classes('w-full')
 
         with ui.card().classes('w-full') as select_norm_file:
-            with ui.row().classes('w-full items-center justify-between'):
+            enable_norm_data = ui.checkbox('Normalize Data', value=False).props('color=cyan-9')
+            with ui.row().classes('w-full items-center justify-between').bind_visibility_from(enable_norm_data, 'value'):
                 ui.button('Select Norm. File', on_click=open_folder_dialog_norm).classes('ml-auto').classes('w-3/4').props('color=cyan-9')
                 ui.button('Clear').classes('ml-auto').classes('w-1/5').props('color=cyan-9')
-            norm_file = ui.input(label='File').classes('w-full').props('clearable')
-            norm_folder = ui.input(label='Folder').classes('w-full').props('clearable')
-            ui.label('Selected file will be used to normalized data').style('font-size: 90%')
+            norm_file = ui.input(label='File').classes('w-full').bind_visibility_from(enable_norm_data, 'value')
+            norm_folder = ui.input(label='Folder').classes('w-full').bind_visibility_from(enable_norm_data, 'value')
+            ui.label('Selected file will be used to normalize data').style('font-size: 90%').bind_visibility_from(enable_norm_data, 'value')
         
         with ui.card().classes('w-full') as generate_card:
+            custom_name_in_plot = ui.input(placeholder='Enter A Custom Text To Be Displayed In The Plot').classes('w-full')
             with ui.button('Generate Graph').classes('w-full').props('color=cyan-9') as generate_button:
                 tool_tip_dis = ui.tooltip('Please Select A Data Folder First').style('font-size: 90%')#.classes('bg-cyan-9')
         generate_button.disable()
@@ -176,6 +178,6 @@ if __name__ in {"__main__", "__mp_main__"}:
                 ui.button('Light', on_click=lambda:update_theme(False)).classes('w-2/5').props('color=cyan-9')
 
     with ui.card().classes('w-full') as graph_card:
-        ui.label(text='Please select a folder using the button')
+        ui.label(text='Please Select A Folder Using The Button')
 
     ui.run(title='Ljungtech')
