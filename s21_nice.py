@@ -61,8 +61,8 @@ def subtract_through_data(
 def create_fig(
         dataframe: pd.DataFrame
         ) -> Figure:
-    if show_title_checkbox.value:
-        title = f'Data from: {data_params.data_folder}'
+    if custom_title_input.value:
+        title = custom_title_input.value
     else:
         title = 'S21 Log Mag'
     if dark.value:
@@ -149,10 +149,12 @@ def generate_graph():
     combined_df = pd.concat(df, ignore_index=True)
 
     fig = create_fig(combined_df)
-    left_drawer.hide()
-    if custom_name_in_plot.value:
+    fig.update_layout(
+            margin=dict(l=0, r=0, t=30, b=5),
+        )
+    if custom_text_input.value:
         fig.add_annotation(
-            text=custom_name_in_plot.value,
+            text=custom_text_input.value,
             xref='paper', yref='paper',
             x=0.02, y=0.98,
             showarrow=False,
@@ -197,7 +199,7 @@ if __name__ in {"__main__", "__mp_main__"}:
         ui.label('S21 Log Mag Graph Generator')
         ui.image(source=PATH_TO_LOGO).style('width: 200px; height: auto;')
 
-    with ui.left_drawer(fixed=False).style('background-color: #338185').props('width=600 bordered') as left_drawer:
+    with ui.left_drawer(fixed=False).style('background-color: #338185').props('width=450') as left_drawer:
         with ui.card().classes('w-full') as select_data_folder:
             with ui.row().classes('w-full items-center justify-between'):
                 ui.button('Select Data Folder', on_click=open_folder_dialog_data).classes('ml-auto').classes('w-3/4').props('color=cyan-9')
@@ -215,7 +217,8 @@ if __name__ in {"__main__", "__mp_main__"}:
             ui.label('Selected File Will Be Used To Normalize Data').style('font-size: 90%').bind_visibility_from(enable_norm_data, 'value')
         
         with ui.card().classes('w-full') as generate_card:
-            custom_name_in_plot = ui.input(placeholder='Enter A Custom Text To Be Displayed In The Plot').classes('w-full')
+            custom_title_input = ui.input(placeholder='Enter A Custom Title').classes('w-full').tooltip('DeFault Title: S21 Log Mag')
+            custom_text_input = ui.input(placeholder='Enter A Custom Text To Be Displayed In The Plot').classes('w-full')
             with ui.button('Generate Graph', on_click=generate_graph).classes('w-full').props('color=cyan-9').tooltip('Please Select A Data Folder') as generate_button:
                 pass
         generate_button.disable()
@@ -223,8 +226,6 @@ if __name__ in {"__main__", "__mp_main__"}:
         with ui.card().classes('w-full') as settings:
             ui.label('Settings')
             delete_checkbox = ui.checkbox('Delete Previous Graph(s)', value=True).props('color=cyan-9')
-            show_title_checkbox = ui.checkbox('Show File Path In Graph', value=False).props('color=cyan-9')
-            # open_with_plotly = ui.checkbox('Open With Plotly', value=False).props('color=cyan-9')
             with ui.row().classes('w-full items-center justify-between'):
                 ui.button('Dark', on_click=lambda:update_theme(True)).classes('w-2/5').props('color=cyan-9')
                 ui.button('Light', on_click=lambda:update_theme(False)).classes('w-2/5').props('color=cyan-9')
