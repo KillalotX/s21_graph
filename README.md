@@ -12,6 +12,7 @@ Run script:
 
 - A webpage will open, select a folder for measurement data
 - Select a file if data should be normalized
+  - If selected, it will not normalize any file that contains the words "**Through**" or "**50dB**" and of course the file selected...
 - Click 'Generate Graph'
 
 ## Features
