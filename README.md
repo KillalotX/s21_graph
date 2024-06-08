@@ -5,8 +5,6 @@ Using NiceGUI library to create a simple webpage that can visualize measurement 
 ### Dark Theme
 ![image](https://github.com/KillalotX/s21_graph/assets/101448966/19a72e27-4a01-402b-8778-2f5a7babd9a7)
 
-
-
 ## How to use
 Run script:
 
@@ -34,4 +32,4 @@ Run script:
 - Selecting a folder/file not always updates the GUI, reload page to fix 
 
 ## Other
-- `CTRL-C` twive in terminal to exit
+- `CTRL-C` to exit
