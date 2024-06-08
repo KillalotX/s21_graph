@@ -17,9 +17,9 @@ Run script:
 - Click 'Generate Graph'
 
 ## Features
+- Set custom title of graph
 - Adding a custom text to the graph area (upper left corner)
 - Possible to keep previously generated graphs
-- Swicth Title of graph to selected data folder
 - Switch between Dark and Light mode (Note: graph will not auto-update to new theme, needs to be regenerated)
 
 ## Prerequisite
