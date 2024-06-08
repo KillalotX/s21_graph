@@ -1,10 +1,11 @@
 # Python
 import glob
 import plotly.express as px
-from plotly.graph_objs import Figure
 import os
 import pandas as pd
 from nicegui import ui
+from tkinter import filedialog
+from tkinter import filedialog, Tk
 from tkinter import filedialog, Tk
 
 PATH_TO_LOGO = './assets/ljungtechlogo.png'
@@ -17,20 +18,17 @@ class DataParams():
         self.norm_folder = None
         self.norm_file = None
 
-def extract_data(
-        files_path: str,
-        single: bool = False
-        ) -> list[pd.DataFrame]:
+def import_data_and_graph(
+        files_path: str
+        ) -> None:
     
     # All file names to a list
-    
+    all_files = glob.glob(os.path.join(files_path, "*.prn"))
     # Column name in dataframe
     column_names = ['freq', 'dB', 'r']
     data_frames = []
-    if not single:
-        all_files = glob.glob(os.path.join(files_path, "*.prn"))
-    else:
-        all_files = [files_path + '\\' + data_params.norm_file]
+    # print('Parsing data, please wait...')
+    # print('Parsing data, please wait...')
     for file in all_files:
         df = pd.read_csv(file, header=None, names=column_names)
         # Removes first two rows
@@ -41,37 +39,20 @@ def extract_data(
         # Converts the data to floats (from string)
         df['dB'] = df['dB'].astype(float)
         df['freq'] = df['freq'].astype(float)
+        # Adds file name to df
         df['Source'] = os.path.basename(file)  # Add a source column to identify the file
         data_frames.append(df)
-    return data_frames
 
-def subtract_through_data(
-        main_df: list[pd.DataFrame], 
-        through_df: list[pd.DataFrame]
-        ) -> list[pd.DataFrame]:
-
-    df_list = []    
-    for df in main_df:
-        if (df.iloc[0]['Source'] != through_df[0].iloc[0]['Source']
-            and 'Through' not in df.iloc[0]['Source']
-            and '50dB' not in df.iloc[0]['Source']):
-            df['dB'] = df['dB'] - through_df[0]['dB']
-            pass
-        df_list.append(df)
-    return df_list
-
-def create_fig(
-        dataframe
-        ) -> Figure:
+    combined_df = pd.concat(data_frames, ignore_index=True)
     if show_title_checkbox.value:
-        title = f'Data from: {data_params.data_folder}'
+        title = f'Data from: {files_path}'
     else:
         title = 'S21 Log Mag'
     if dark.value:
         theme = 'plotly_dark'
     else:
         theme = 'plotly'
-    fig = px.line(dataframe, x='freq', y='dB', color='Source', height=900, title=title, template=theme)
+    fig = px.line(combined_df, x='freq', y='dB', color='Source', height=900, title=title, template=theme)
     # fig.update_layout(template='plotly_dark')
     # Sets tick interval for freq axis
     tickvals = list(range(30_000_000, 9_000_000_000, 1_000_000_000))
@@ -90,11 +71,8 @@ def create_fig(
     ticktext.append("9 GHz")
 
     fig.update_xaxes(tickvals=tickvals, ticktext=ticktext, tickformat=".0e", type='log', tickangle=45)
-    ui.notify(f'Parsed {len(data_params.data_files)} file(s)', close_button='Close')
-    # fig.add_annotation()
+    ui.notify(f'Parsed {len(all_files)} file(s)', close_button='Close')
     return fig
-
-
     
 def open_folder_dialog_data():
     folder = open_folder_dialog()
@@ -105,24 +83,22 @@ def open_folder_dialog_data():
         data_params.data_files = file_names
         data_params.data_folder = folder
         
-        data_folder_text_input.set_value(data_params.data_folder)
+        data_folder.set_value(data_params.data_folder)
         file_names = '\n'.join(data_params.data_files)
-        data_files_text_area.set_value(file_names)
-        # try:
-        #     tool_tip_dis.delete()
-        # except:
-        #     pass
-        generate_button.tooltip('').style('font-size: 90%')
+        data_files.set_value(file_names)
+        
+        tool_tip_dis.delete()
         generate_button.tooltip("Click To Generate Graph").style('font-size: 90%')
         generate_button.enable()
+
 def open_folder_dialog_norm():
     file = open_file_dialog()
 
     if file:
         data_params.norm_file = os.path.basename(file.name)
         data_params.norm_folder = os.path.dirname(file.name)
-        norm_file_text_area.set_value(data_params.norm_file)
-        norm_folder_text_input.set_value(data_params.norm_folder)
+        norm_file.set_value(data_params.norm_file)
+        norm_folder.set_value(f'{data_params.norm_folder}')
 
 def open_folder_dialog():
     root = Tk()
@@ -142,56 +118,20 @@ def open_file_dialog():
     root.destroy()
     return file_selected
 
-def update_theme(dark_mode):
-    if dark_mode:
-        dark.enable()
-    else:
+
+    if folder_selected:
+        fig = import_data_and_graph(folder_selected)
+        if delete_checkbox.value:
+            graph_card.clear()
+        with graph_card:
+            ui.plotly(fig).classes('w-full')
+def update_theme():
+    if dark.value:
+        theme = 'plotly_dark'
         dark.disable()
-
-def generate_graph():
-    df = extract_data(data_params.data_folder)
-    if enable_norm_data.value:
-        norm_df = extract_data(data_params.norm_folder, single=True)
-        df = subtract_through_data(df, norm_df)
-    combined_df = pd.concat(df, ignore_index=True)
-
-    fig = create_fig(combined_df)
-    left_drawer.hide()
-    if custom_name_in_plot.value:
-        fig.add_annotation(
-            text=custom_name_in_plot.value,
-            xref='paper', yref='paper',
-            x=0.02, y=0.98,
-            showarrow=False,
-            font=dict(size=12, color='black'),
-            bgcolor='lightgrey',
-            bordercolor='black',
-            borderwidth=1
-        )
-    if delete_checkbox.value:
-        graph_card.clear()
-    with graph_card:
-        ui.plotly(fig).classes('w-full')
-    graph_card.update()
-
-def clear_data_input():
-    data_files_text_area.set_value(None)
-    # print(data_files_text_area)
-    data_folder_text_input.set_value(None)
-    data_params.data_files = None
-    data_params.data_folder = None
-    data_files_text_area.update()
-    data_folder_text_input.update()
-    generate_button.tooltip("Please Select A Data Folder").style('font-size: 90%')
-    generate_button.disable()
-
-def clear_norm_input():
-    norm_file_text_area.set_value(None)
-    norm_folder_text_input.set_value(None)
-    data_params.norm_file = None
-    data_params.norm_folder = None
-    norm_file_text_area.update()
-    norm_folder_text_input.update()
+    else:
+        theme = 'plotly'
+        dark.enable()
 
 if __name__ in {"__main__", "__mp_main__"}:
 
@@ -209,36 +149,33 @@ if __name__ in {"__main__", "__mp_main__"}:
         with ui.card().classes('w-full') as select_data_folder:
             with ui.row().classes('w-full items-center justify-between'):
                 ui.button('Select Data Folder', on_click=open_folder_dialog_data).classes('ml-auto').classes('w-3/4').props('color=cyan-9')
-                data_clear_button = ui.button('Clear', on_click=clear_data_input).classes('ml-auto').classes('w-1/5').props('color=cyan-9')
-            data_files_text_area = ui.textarea(label='File(s)').classes('w-full')
-            data_folder_text_input = ui.input(label='Folder').classes('w-full')
+                ui.button('Clear').classes('ml-auto').classes('w-1/5').props('color=cyan-9')
+            data_files = ui.textarea(label='File(s)').classes('w-full').props('clearable')
+            data_folder = ui.input(label='Folder').classes('w-full').props('clearable')
 
         with ui.card().classes('w-full') as select_norm_file:
-            enable_norm_data = ui.checkbox('Normalize Data', value=False).props('color=cyan-9')
-            with ui.row().classes('w-full items-center justify-between').bind_visibility_from(enable_norm_data, 'value'):
+            with ui.row().classes('w-full items-center justify-between'):
                 ui.button('Select Norm. File', on_click=open_folder_dialog_norm).classes('ml-auto').classes('w-3/4').props('color=cyan-9')
-                norm_clear_button = ui.button('Clear', on_click=clear_norm_input).classes('ml-auto').classes('w-1/5').props('color=cyan-9')
-            norm_file_text_area = ui.input(label='File').classes('w-full').bind_visibility_from(enable_norm_data, 'value')
-            norm_folder_text_input = ui.input(label='Folder').classes('w-full').bind_visibility_from(enable_norm_data, 'value')
-            ui.label('Selected File Will Be Used To Normalize Data').style('font-size: 90%').bind_visibility_from(enable_norm_data, 'value')
+                ui.button('Clear').classes('ml-auto').classes('w-1/5').props('color=cyan-9')
+            norm_file = ui.input(label='File').classes('w-full').props('clearable')
+            norm_folder = ui.input(label='Folder').classes('w-full').props('clearable')
+            ui.label('Selected file will be used to normalized data').style('font-size: 90%')
         
         with ui.card().classes('w-full') as generate_card:
-            custom_name_in_plot = ui.input(placeholder='Enter A Custom Text To Be Displayed In The Plot').classes('w-full')
-            with ui.button('Generate Graph', on_click=generate_graph).classes('w-full').props('color=cyan-9').tooltip('Please Select A Data Folder') as generate_button:
-                pass
-                # tool_tip_dis = ui.tooltip('Please Select A Data Folder First').style('font-size: 90%')#.classes('bg-cyan-9')
+            with ui.button('Generate Graph').classes('w-full').props('color=cyan-9') as generate_button:
+                tool_tip_dis = ui.tooltip('Please Select A Data Folder First').style('font-size: 90%')#.classes('bg-cyan-9')
         generate_button.disable()
         
         with ui.card().classes('w-full') as settings:
             ui.label('Settings')
             delete_checkbox = ui.checkbox('Delete Previous Graph(s)', value=True).props('color=cyan-9')
-            show_title_checkbox = ui.checkbox('Show File Path In Graph', value=False).props('color=cyan-9')
-            # open_with_plotly = ui.checkbox('Open With Plotly', value=False).props('color=cyan-9')
+            show_title_checkbox = ui.checkbox('Show File Path In Graph', value=True).props('color=cyan-9')
+            open_with_plotly = ui.checkbox('Open With Plotly', value=False).props('color=cyan-9')
             with ui.row().classes('w-full items-center justify-between'):
                 ui.button('Dark', on_click=lambda:update_theme(True)).classes('w-2/5').props('color=cyan-9')
                 ui.button('Light', on_click=lambda:update_theme(False)).classes('w-2/5').props('color=cyan-9')
 
     with ui.card().classes('w-full') as graph_card:
-        ui.label(text='Please Select A Folder Using The Button')
+        ui.label(text='Please select a folder using the button')
 
     ui.run(title='Ljungtech')
