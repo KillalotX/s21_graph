@@ -49,11 +49,10 @@ def subtract_through_data(
         through_df: list[pd.DataFrame]
         ) -> list[pd.DataFrame]:
 
+    # Gest exempt list input data
     exempt_list = exepmt_textarea_input.value.split('\n')
-    # for item in exempt_list:
-    #     if item == '':
+    # Removes any empty lines
     exempt_list = [item for item in exempt_list if item]
-    print(repr(exempt_list))
 
     df_list = []    
     for df in main_df:
@@ -224,7 +223,7 @@ if __name__ in {"__main__", "__mp_main__"}:
             # ui.label('Selected File Will Be Used To Normalize Data').style('font-size: 80%; font-style: italic;').bind_visibility_from(enable_norm_data, 'value')
             ui.separator().props('color=cyan-9').bind_visibility_from(enable_norm_data, 'value')
             ui.label('Exempt List (New Line Separated):').bind_visibility_from(enable_norm_data, 'value')
-            exepmt_textarea_input = ui.textarea(value='Through\n50dB').classes('w-full').bind_visibility_from(enable_norm_data, 'value').tooltip('Any File Containing A Word From this List Will Not Be Modified With Above Selected File')
+            exepmt_textarea_input = ui.textarea(value='Through\n50dB').classes('w-full').bind_visibility_from(enable_norm_data, 'value').tooltip('Any File Containing A Word From This List Will Not Be Modified With Above Selected File')
         
         with ui.card().classes('w-full') as generate_card:
             with ui.button('Generate Graph', on_click=generate_graph).classes('w-full').props('color=cyan-9').tooltip('Please Select A Data Folder') as generate_button:
