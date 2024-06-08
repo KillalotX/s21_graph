@@ -16,6 +16,7 @@ class DataParams():
         self.data_files = None
         self.norm_folder = None
         self.norm_file = None
+        self.exepmt_textarea_visible = False
 
 def extract_data(
         files_path: str,
@@ -48,11 +49,16 @@ def subtract_through_data(
         through_df: list[pd.DataFrame]
         ) -> list[pd.DataFrame]:
 
+    # Gest exempt list input data
+    exempt_list = exepmt_textarea_input.value.split('\n')
+    # Removes any empty lines
+    exempt_list = [item for item in exempt_list if item]
+
     df_list = []    
     for df in main_df:
         if (df.iloc[0]['Source'] != through_df[0].iloc[0]['Source']
-            and 'Through' not in df.iloc[0]['Source']
-            and '50dB' not in df.iloc[0]['Source']):
+            and not any(exempt in df.iloc[0]['Source'] for exempt in exempt_list)):
+
             df['dB'] = df['dB'] - through_df[0]['dB']
             pass
         df_list.append(df)
@@ -214,13 +220,16 @@ if __name__ in {"__main__", "__mp_main__"}:
                 norm_clear_button = ui.button('Clear', on_click=clear_norm_input).classes('ml-auto').classes('w-1/5').props('color=cyan-9')
             norm_file_text_area = ui.input(label='File').classes('w-full').bind_visibility_from(enable_norm_data, 'value')
             norm_folder_text_input = ui.input(label='Folder').classes('w-full').bind_visibility_from(enable_norm_data, 'value')
-            ui.label('Selected File Will Be Used To Normalize Data').style('font-size: 90%').bind_visibility_from(enable_norm_data, 'value')
+            # ui.label('Selected File Will Be Used To Normalize Data').style('font-size: 80%; font-style: italic;').bind_visibility_from(enable_norm_data, 'value')
+            ui.separator().props('color=cyan-9').bind_visibility_from(enable_norm_data, 'value')
+            ui.label('Exempt List (New Line Separated):').bind_visibility_from(enable_norm_data, 'value')
+            exepmt_textarea_input = ui.textarea(value='Through\n50dB').classes('w-full').bind_visibility_from(enable_norm_data, 'value').tooltip('Any File Containing A Word From This List Will Not Be Modified With Above Selected File')
         
         with ui.card().classes('w-full') as generate_card:
-            custom_title_input = ui.input(placeholder='Enter A Custom Title').classes('w-full').tooltip('DeFault Title: S21 Log Mag')
-            custom_text_input = ui.input(placeholder='Enter A Custom Text To Be Displayed In The Plot').classes('w-full')
             with ui.button('Generate Graph', on_click=generate_graph).classes('w-full').props('color=cyan-9').tooltip('Please Select A Data Folder') as generate_button:
                 pass
+            custom_title_input = ui.input(placeholder='Enter A Custom Title').classes('w-full').tooltip('DeFault Title: S21 Log Mag')
+            custom_text_input = ui.input(placeholder='Enter A Custom Text To Be Displayed In The Plot').classes('w-full')
         generate_button.disable()
         
         with ui.card().classes('w-full') as settings:
