@@ -32,3 +32,6 @@ Run script:
 ## Know issues
 - Plotly graph not always shown in the full width of screen, resize to fix this
 - Selecting a folder/file not always updates the GUI, reload page to fix 
+
+## Other
+- `CTRL-C` twive in terminal to exit
