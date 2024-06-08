@@ -22,8 +22,6 @@ def extract_data(
         single: bool = False
         ) -> list[pd.DataFrame]:
     
-    # All file names to a list
-    
     # Column name in dataframe
     column_names = ['freq', 'dB', 'r']
     data_frames = []
@@ -61,7 +59,7 @@ def subtract_through_data(
     return df_list
 
 def create_fig(
-        dataframe
+        dataframe: pd.DataFrame
         ) -> Figure:
     if show_title_checkbox.value:
         title = f'Data from: {data_params.data_folder}'
@@ -93,8 +91,6 @@ def create_fig(
     ui.notify(f'Parsed {len(data_params.data_files)} file(s)', close_button='Close')
     # fig.add_annotation()
     return fig
-
-
     
 def open_folder_dialog_data():
     folder = open_folder_dialog()
@@ -108,16 +104,13 @@ def open_folder_dialog_data():
         data_folder_text_input.set_value(data_params.data_folder)
         file_names = '\n'.join(data_params.data_files)
         data_files_text_area.set_value(file_names)
-        # try:
-        #     tool_tip_dis.delete()
-        # except:
-        #     pass
+
         generate_button.tooltip('').style('font-size: 90%')
         generate_button.tooltip("Click To Generate Graph").style('font-size: 90%')
         generate_button.enable()
+
 def open_folder_dialog_norm():
     file = open_file_dialog()
-
     if file:
         data_params.norm_file = os.path.basename(file.name)
         data_params.norm_folder = os.path.dirname(file.name)
@@ -176,7 +169,6 @@ def generate_graph():
 
 def clear_data_input():
     data_files_text_area.set_value(None)
-    # print(data_files_text_area)
     data_folder_text_input.set_value(None)
     data_params.data_files = None
     data_params.data_folder = None
@@ -226,7 +218,6 @@ if __name__ in {"__main__", "__mp_main__"}:
             custom_name_in_plot = ui.input(placeholder='Enter A Custom Text To Be Displayed In The Plot').classes('w-full')
             with ui.button('Generate Graph', on_click=generate_graph).classes('w-full').props('color=cyan-9').tooltip('Please Select A Data Folder') as generate_button:
                 pass
-                # tool_tip_dis = ui.tooltip('Please Select A Data Folder First').style('font-size: 90%')#.classes('bg-cyan-9')
         generate_button.disable()
         
         with ui.card().classes('w-full') as settings:
@@ -239,6 +230,6 @@ if __name__ in {"__main__", "__mp_main__"}:
                 ui.button('Light', on_click=lambda:update_theme(False)).classes('w-2/5').props('color=cyan-9')
 
     with ui.card().classes('w-full') as graph_card:
-        ui.label(text='Please Select A Folder Using The Button')
+        ui.label(text='Please Select A Folder')
 
     ui.run(title='Ljungtech')
