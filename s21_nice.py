@@ -75,8 +75,23 @@ def create_fig(
         theme = 'plotly_dark'
     else:
         theme = 'plotly'
-    fig = px.line(dataframe, x='freq', y='dB', color='Source', height=900, title=title, template=theme)
-    # fig.update_layout(template='plotly_dark')
+
+    freq_data_df = dataframe.loc[dataframe['Source'] == dataframe['Source'].unique()[0]]
+    freq_list = freq_data_df['freq'].tolist()
+    db_list = dataframe['dB'].tolist()
+    
+    updated_freq_list = []
+    for i in dataframe['Source'].unique():
+        for freq in freq_list:
+            if freq < 1_000_000_000:
+                updated_freq_list.append(f'File: {i}<br>Freq: {(freq/1_000_000):.3f} MHz')
+            else:
+                updated_freq_list.append(f'File: {i}<br>Freq: {(freq/1_000_000_000):.3f} GHz')
+
+    for i, v in enumerate(db_list):
+        updated_freq_list[i] += f'<br>Att: {v:.3f}dB'
+
+    fig = px.line(dataframe, x='freq', y='dB', color='Source', height=900, title=title, template=theme, hoverhover_name=updated_freq_list)
     # Sets tick interval for freq axis
     tickvals = list(range(30_000_000, 9_000_000_000, 1_000_000_000))
     # For tick text
