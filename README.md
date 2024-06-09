@@ -1,10 +1,10 @@
 # S21 graph concept
 Using NiceGUI library to create a simple webpage that can visualize measurement data
 ### Light theme
-![image](https://github.com/KillalotX/s21_graph/assets/101448966/9ce58c7d-969e-4bd4-8e74-ac77d9cce81c)
+![image](https://github.com/KillalotX/s21_graph/assets/101448966/05edd2e3-3500-4c56-b55a-01a260227fce)
 
 ### Dark Theme
-![image](https://github.com/KillalotX/s21_graph/assets/101448966/f4791144-f48e-4006-99f8-8bc6570179b3)
+![image](https://github.com/KillalotX/s21_graph/assets/101448966/91009822-1876-4ffa-8939-052e55cb508c)
 
 ## How to use
 Run script:
