@@ -91,7 +91,7 @@ def create_fig(
     for i, v in enumerate(db_list):
         updated_freq_list[i] += f'<br>Att: {v:.3f}dB'
 
-    fig = px.line(dataframe, x='freq', y='dB', color='Source', height=900, title=title, template=theme, hoverhover_name=updated_freq_list)
+    fig = px.line(dataframe, x='freq', y='dB', color='Source', height=900, title=title, template=theme, hover_name=updated_freq_list)
     # Sets tick interval for freq axis
     tickvals = list(range(30_000_000, 9_000_000_000, 1_000_000_000))
     # For tick text
